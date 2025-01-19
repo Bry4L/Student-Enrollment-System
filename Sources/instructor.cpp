@@ -4,7 +4,7 @@
 using namespace std;
 
 // Display the Instructor Menu and handle user input
-void instructorMenu() {
+void instructorMenu(User* loggedInUser, InstructorList& instructorList, const Stack& instructorStack, const CourseManagement& courseManagement) {
     int choice;
     do {
         cout << "\nInstructor Menu:" << endl;
@@ -15,7 +15,8 @@ void instructorMenu() {
 
         switch (choice) {
             case 1:
-                cout << "View Assigned Courses functionality not implemented yet." << endl;
+                // Call the new function to view assigned courses
+                instructorList.viewAssignedCourses(loggedInUser->username, instructorStack, courseManagement);
                 break;
             case 2:
                 cout << "Logging out..." << endl;
@@ -175,5 +176,44 @@ void InstructorList::viewInstructors() {
         // Display instructor information
         cout << "ID: " << current->instructor->instructorId << ", Name: " << current->instructor->name << ", Contact: " << current->instructor->contactInfo << endl;
         current = current->next;
+    }
+}
+
+void InstructorList::viewAssignedCourses(const string& instructorId, const Stack& instructorStack, const CourseManagement& courseManagement) {
+    cout << "Assigned Courses for Instructor ID: " << instructorId << endl;
+    cout << "-----------------------------------" << endl;
+
+    bool found = false;
+
+    // Create a temporary stack to avoid modifying the original stack
+    Stack tempStack = instructorStack;
+
+    while (!tempStack.isEmpty()) {
+        InstructorCourseAssignment assignment = tempStack.pop(); // Pop the top assignment
+        if (assignment.instructorID == instructorId) {
+            found = true;
+            string courseID = assignment.courseID;
+            Course* course = courseManagement.findCourse(courseID);
+
+            if (course != nullptr) {
+                cout << "Course ID: " << course->id << ", Course Name: " << course->name << endl;
+                cout << "Enrolled Students: " << course->enrolledStudents << endl;
+
+                // Display enrolled students (if any)
+                if (course->enrolledStudents > 0) {
+                    cout << "List of Enrolled Students:" << endl;
+                    for (const auto& student : course->enrolledStudentsList) {
+                        cout << "Student ID: " << student.first << ", Student Name: " << student.second << endl;
+                    }
+                } else {
+                    cout << "No students enrolled in this course." << endl;
+                }
+                cout << "-----------------------------------" << endl;
+            }
+        }
+    }
+
+    if (!found) {
+        cout << "No courses assigned to this instructor." << endl;
     }
 }
