@@ -2,43 +2,39 @@
 #define STUDENT_H
 
 #include <string>
-#include "authentication.h"
+#include <vector>
+#include "authentication.h" // For UserList
 
 using namespace std;
 
-class Student {
-public:
-    string studentId;
+// Student structure
+struct Student {
+    string id;
     string name;
-    string contactInfo;
-
-    Student(string id, string n, string contact) : studentId(id), name(n), contactInfo(contact) {}
+    string ageOrContact;
 };
 
-// Node for linked list
-struct StudentNode {
-    Student* student;
-    StudentNode* next;
-
-    StudentNode(Student* s) : student(s), next(nullptr) {}
-    ~StudentNode() {
-        delete student; // Delete the Student object
-    }
+// Node structure for linked list
+struct Node {
+    Student student;
+    Node* next;
 };
 
-// Linked list to store students
-class StudentList {
-public:
-    StudentNode* head;
-
-    StudentList() : head(nullptr) {}
-    ~StudentList(); // Destructor to clean up the linked list
-
-    void addStudent(UserList& userList); // Pass UserList as a parameter
-    void updateStudent();
-    void deleteStudent();
-    void viewStudents();
-};
-
+// Function declarations
+void addStudent(UserList& userList);
+void updateStudent();
+void deleteStudent(UserList& userList);
+void viewStudents();
 void studentMenu();
+void searchStudent();
+
+// Declare save and load functions
+void saveStudentsToFile();
+void loadStudentsFromFile();
+
+// Declare merge sort functions
+void merge(vector<Student>& students, int left, int mid, int right);
+void mergeSort(vector<Student>& students, int left, int right);
+void sortStudents();
+
 #endif
