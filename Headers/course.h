@@ -17,6 +17,7 @@ struct Course {
     string name;
     int maxSeats;
     int enrolledStudents;
+    vector<pair<string, string>> enrolledStudentsList;
     vector<string> prerequisites; // List of prerequisite course IDs
 };
 
@@ -61,7 +62,9 @@ public:
     void deleteCourse(const string& id);
     void updateCourse(const string& id, const string& name = "", int maxSeats = -1);
     void viewAllCourses();
-    Course* findCourse(const string& id) const;  // Add this method
+    Course* findCourse(const string& id) const;
+
+    vector<pair<string, string>> getEnrolledStudents(const string& courseID) const;
 };
 
 #endif
