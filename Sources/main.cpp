@@ -10,8 +10,9 @@ using namespace std;
 int main() {
     // Create instances of UserList, StudentList, and CourseList
     UserList userList;
-    StudentList studentList;
+    vector<Student> students;
     InstructorList instructorList;
+    loadStudentsFromFile();
     //CourseList courseList;
 
     // Load users and instructors from file at startup
@@ -46,7 +47,7 @@ int main() {
                 loggedInUser = userList.loginUser();
                 if (loggedInUser) {
                     if (loggedInUser->role == "admin") {
-                        adminMenu(userList, studentList, instructorList);
+                        adminMenu(userList, students, instructorList);
                     } else if (loggedInUser->role == "instructor") {
                         instructorMenu(); // Call the instructorMenu function
                     } else if (loggedInUser->role == "student") {
