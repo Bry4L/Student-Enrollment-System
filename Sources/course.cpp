@@ -184,3 +184,12 @@ Course* CourseManagement::findCourse(const string& id) const {
     }
     return nullptr; // Return nullptr if the course is not found
 }
+
+vector<pair<string, string>> CourseManagement::getEnrolledStudents(const string& courseID) const {
+    for (int i = 0; i < courseCount; ++i) {
+        if (courses[i].id == courseID) {
+            return courses[i].enrolledStudentsList; // Return the list of enrolled students (ID and Name)
+        }
+    }
+    return {}; // Return an empty vector if the course is not found
+}
