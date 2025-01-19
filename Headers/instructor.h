@@ -4,8 +4,13 @@
 #include <string>
 #include <fstream>
 #include "authentication.h"
+#include "course.h"
 
 using namespace std;
+
+// Forward declarations
+class Stack;
+class CourseManagement;
 
 // Instructor class to hold individual instructor data
 class Instructor {
@@ -46,8 +51,9 @@ public:
     void updateInstructor();
     void deleteInstructor(UserList& userList);
     void viewInstructors();
+    void viewAssignedCourses(const string& instructorId, const Stack& instructorStack, const CourseManagement& courseManagement); // Updated function
 };
 
-void instructorMenu();
+void instructorMenu(User* loggedInUser, InstructorList& instructorList, const Stack& instructorStack, const CourseManagement& courseManagement); // Updated function
 
 #endif
