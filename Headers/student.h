@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include "authentication.h" // For UserList
+#include "course.h"
+#include "enroll.h"
 
 using namespace std;
 
@@ -25,7 +27,7 @@ void addStudent(UserList& userList);
 void updateStudent();
 void deleteStudent(UserList& userList);
 void viewStudents();
-void studentMenu();
+void studentMenu(const char* studentID, const char* studentName, EnrolledList& enrolledList, CourseManagement& courseManagement, WaitlistQueue& waitlist, UndoStack& undoStack);
 void searchStudent();
 
 // Declare save and load functions
@@ -36,5 +38,8 @@ void loadStudentsFromFile();
 void merge(vector<Student>& students, int left, int mid, int right);
 void mergeSort(vector<Student>& students, int left, int right);
 void sortStudents();
+
+// Function to get student name by ID
+string getStudentNameById(const string& studentID);
 
 #endif
