@@ -2,49 +2,41 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <limits>
 
 using namespace std;
 
 // Vector to store students
 vector<Student> students;
 
+// Head of the linked list for students
 Node* head = nullptr;
-// Insert a student into the linked list
-void insertStudent(Node*& head, const Student& student) {
-    Node* newNode = new Node();
-    newNode->student = student;
-    newNode->next = head;
-    head = newNode;
-}
 
-// Delete a student from the linked list by ID
-void deleteStudentFromList(Node*& head, const string& id) {
-    Node* current = head;
-    Node* previous = nullptr;
-
-    while (current != nullptr) {
-        if (current->student.id == id) {
-            if (previous == nullptr) {
-                // Deleting the head node
-                head = current->next;
-            } else {
-                // Deleting a middle or last node
-                previous->next = current->next;
-            }
-            delete current;
-            return;
-        }
-        previous = current;
-        current = current->next;
+//Validation on creation of studentID
+bool isValidStudentID(const char* studentID) {
+    if (strlen(studentID) != 10) { // ID must be exactly 10 characters long
+        return false;
     }
+    for (int i = 0; i < 10; i++) {
+        if (!isdigit(studentID[i])) {
+            return false; // Each character must be a digit
+        }
+    }
+    return true;
 }
-
 
 // Add a new student
 void addStudent(UserList& userList) {
     string id, name, ageOrContact;
     cout << "Enter Student ID: ";
     cin >> id;
+
+        // Validate student ID
+    if (!isValidStudentID(id.c_str())) {
+        cout << "Error: Student ID must be exactly 10 digits.\n";
+        return;
+    }
+
     for (const auto& student : students) {
         if (student.id == id) {
             cout << "Student with this ID already exists!" << endl;
@@ -57,18 +49,16 @@ void addStudent(UserList& userList) {
     cout << "Enter Age/Contact Info (optional): ";
     getline(cin, ageOrContact);
 
+     // Create a new student and add to the vector
     Student newStudent = {id, name, ageOrContact};
     students.push_back({id, name, ageOrContact});
-
-    // Insert the student into the linked list
-    insertStudent(head, newStudent);
 
     // Write the student's details to students.txt
     ofstream studentFile("students.txt", ios::app); // Open in append mode
     if (studentFile.is_open()) {
         studentFile << id << " " << name << " " << ageOrContact << endl;
         studentFile.close();
-        cout << "Student details saved to students.txt." << endl;
+
     } else {
         cerr << "Error: Unable to open students.txt for writing." << endl;
     }
@@ -114,8 +104,6 @@ void deleteStudent(UserList& userList) {
         if (it->id == id) {
             students.erase(it);
 
-            // Delete the student from the linked list
-            deleteStudentFromList(head, id);
             // Save students to file
             saveStudentsToFile();
 
@@ -183,6 +171,7 @@ void searchStudent() {
     }
 }
 
+//Sort function using merge sort by sorting student by their id
 void merge(vector<Student>& students, int left, int mid, int right) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
@@ -238,7 +227,7 @@ void sortStudents() {
 // View all students
 void viewStudents() {
 
-     sortStudents();
+     sortStudents(); // Sort students before displaying
     if (students.empty()) {
         cout << "No students enrolled yet." << endl;
         return;
@@ -261,7 +250,6 @@ void saveStudentsToFile() {
                  << student.ageOrContact << endl;
         }
         file.close();
-        cout << "Students saved to students.txt." << endl;
     } else {
         cerr << "Error: Unable to save students to file." << endl;
     }
@@ -281,29 +269,83 @@ void loadStudentsFromFile() {
     }
 }
 
-// Student menu
-void studentMenu() {
+string getStudentNameById(const string& studentID) {
+    for (const auto& student : students) {
+        if (student.id == studentID) {
+            return student.name;
+        }
+    }
+    return "Unknown"; // Return a default value if the student is not found
+}
+
+void studentMenu(const char* studentID, const char* studentName, EnrolledList& enrolledList, CourseManagement& courseManagement, WaitlistQueue& waitlist, UndoStack& undoStack) {
     int choice;
+    char courseID[10];
+    string searchTerm;
     do {
         cout << "\nStudent Menu:" << endl;
-        cout << "1. View Courses" << endl;
+        cout << "1. View All Courses" << endl;
         cout << "2. Enroll in a Course" << endl;
-        cout << "3. Logout" << endl;
+        cout << "3. Drop a Course" << endl;
+        cout << "4. View Enrolled Courses" << endl;
+        cout << "5. Search for a Course" << endl;
+        cout << "6. View Waitlist for a Course" << endl;
+        cout << "7. Undo Last Action" << endl;
+        cout << "8. Exit" << endl;
         cout << "Enter your choice: ";
-        cin >> choice;
 
+
+        // Check if the input is valid
+        if (!(cin >> choice)) {
+            cin.clear(); // Clear the error state of cin
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input in the buffer
+            cout << "Invalid choice. Try again." << endl;
+            continue; // Skip the rest of the loop and prompt again
+        }
+
+        // Check if the input is within the valid range
+        if (choice < 1 || choice > 8) {
+            cout << "Invalid choice. Try again." << endl;
+            continue; // Skip the rest of the loop and prompt again
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the buffer after reading the choice
         switch (choice) {
             case 1:
-                cout << "View Courses functionality not implemented yet." << endl;
+                courseManagement.viewAllCourses();
                 break;
             case 2:
-                cout << "Enroll in a Course functionality not implemented yet." << endl;
+                cout << "Enter Course ID to enroll: ";
+                cin >> courseID;
+                enrollStudent(enrolledList, courseManagement, waitlist, undoStack, studentID, studentName, courseID);
                 break;
             case 3:
-                cout << "Logging out..." << endl;
+                cout << "Enter Course ID to drop: ";
+                cin >> courseID;
+                dropCourse(enrolledList, courseManagement, waitlist, undoStack, studentID, courseID);
+                break;
+            case 4:
+                displayEnrolledCourses(enrolledList, studentID);
+                break;
+            case 5:
+                  cout << "Enter Course ID or Name to search: ";
+                getline(cin, searchTerm); // Use getline for safer input
+                searchCourse(courseManagement, searchTerm.c_str()); // Convert to const char*
+                break;
+            case 6:
+                cout << "Enter Course ID to view waitlist: ";
+                cin >> courseID;
+                displayWaitlist(waitlist, courseID);
+                break;
+            case 7:
+                cout << "Undoing last action..." << endl;
+                undoStack.pop(enrolledList, courseManagement, waitlist);
+                break;
+            case 8:
+                cout << "Exiting the program." << endl;
                 break;
             default:
-                cout << "Invalid choice. Try again." << endl;
+                cout << "Invalid choice! Please try again." << endl;
         }
-    } while (choice != 3);
+    } while (choice != 8);
 }
