@@ -1,27 +1,29 @@
 #include "enroll.h"
 
-// Function implementations for WaitlistQueue
+//Check if Waitlist is Empty
 bool WaitlistQueue::isEmpty() {
     return front == nullptr;
 }
 
+//Enqueue a Student to the Waitlist
 void WaitlistQueue::enqueue(const char* studentID, const char* studentName, const char* courseID, const char* courseName) {
-    EnrollmentNode* newNode = new EnrollmentNode();
-    strcpy(newNode->studentID, studentID);
-    strcpy(newNode->studentName, studentName); // Ensure this is correct
-    strcpy(newNode->courseID, courseID);
-    strcpy(newNode->courseName, courseName);
-    newNode->next = nullptr;
+    EnrollmentNode* newNode = new EnrollmentNode(); // Create a new node
+    strcpy(newNode->studentID, studentID);      // Copy student ID
+    strcpy(newNode->studentName, studentName); // Copy student name
+    strcpy(newNode->courseID, courseID);        // Copy course ID
+    strcpy(newNode->courseName, courseName);    // Copy course name
+    newNode->next = nullptr;                // Set next pointer to nullptr
 
     if (isEmpty()) {
         front = rear = newNode;
     } else {
-        rear->next = newNode;
-        rear = newNode;
+        rear->next = newNode;   // Add the new node to the end of the queue
+        rear = newNode;     // Update rear to the new node
     }
     cout << "Student added to the waitlist." << endl;
 }
 
+//Removes the student at the front of the waitlist.
 void WaitlistQueue::dequeue() {
     if (isEmpty()) {
         cout << "Waitlist is empty." << endl;
@@ -35,15 +37,19 @@ void WaitlistQueue::dequeue() {
     }
 }
 
+//Returns the front node of the waitlist.
 EnrollmentNode* WaitlistQueue::getFrontNode() {
     return front;
 }
 
-// Function implementations for UndoStack
+//Check if UndoStack is Empty
 bool UndoStack::isEmpty() {
     return top == nullptr;
 }
 
+
+//Push an Action to the UndoStack
+//Adds an action (e.g., "Enroll" or "Drop") to the undo stack.
 void UndoStack::push(const char* actionType, const char* studentID, const char* courseID) {
     Action* newAction = new Action();
     strcpy(newAction->actionType, actionType);
@@ -53,6 +59,7 @@ void UndoStack::push(const char* actionType, const char* studentID, const char* 
     top = newAction;
 }
 
+//Reverses the last action (e.g., "Enroll" or "Drop") and removes it from the stac
 void UndoStack::pop(EnrolledList& list, CourseManagement& courseManagement, WaitlistQueue& waitlist) {
     if (isEmpty()) {
         cout << "No actions to undo." << endl;
@@ -81,6 +88,7 @@ void UndoStack::pop(EnrolledList& list, CourseManagement& courseManagement, Wait
     delete temp; // Free memory
 }
 
+//Get the Top Action from the UndoStack
 const char* UndoStack::getTopAction() {
     if (isEmpty()) {
         return nullptr;
@@ -88,34 +96,13 @@ const char* UndoStack::getTopAction() {
     return top->actionType;
 }
 
-// Other function implementations
+// Initialize EnrolledList
 void initializeEnrolledList(EnrolledList& list) {
     list.head = nullptr;
 }
 
-bool isValidStudentID(const char* studentID) {
-    if (strlen(studentID) != 10) {
-        return false;
-    }
-    for (int i = 0; i < 10; i++) {
-        if (!isdigit(studentID[i])) {
-            return false;
-        }
-    }
-    return true;
-}
 
-bool isUniqueStudentID(EnrolledList& list, const char* studentID) {
-    EnrollmentNode* temp = list.head;
-    while (temp != nullptr) {
-        if (strcmp(temp->studentID, studentID) == 0) {
-            return false;
-        }
-        temp = temp->next;
-    }
-    return true;
-}
-
+//Display Enrolled Courses for a Student
 void displayEnrolledCourses(EnrolledList& list, const char* studentID) {
     EnrollmentNode* temp = list.head;
     bool found = false;
@@ -134,6 +121,7 @@ void displayEnrolledCourses(EnrolledList& list, const char* studentID) {
     cout << "-----------------------------" << endl;
 }
 
+//Display Waitlist for a Course
 void displayWaitlist(WaitlistQueue& waitlist, const char* courseID) {
     EnrollmentNode* temp = waitlist.front;
     bool found = false;
@@ -152,6 +140,8 @@ void displayWaitlist(WaitlistQueue& waitlist, const char* courseID) {
     cout << "-----------------------------" << endl;
 }
 
+
+//Enroll a Student in a Course
 void enrollStudent(EnrolledList& list, CourseManagement& courseManagement, WaitlistQueue& waitlist, UndoStack& undoStack, const char* studentID, const char* studentName, const char* courseID) {
     // Check if the student is already enrolled in the same course
     EnrollmentNode* temp = list.head;
@@ -194,6 +184,7 @@ void enrollStudent(EnrolledList& list, CourseManagement& courseManagement, Waitl
     cout << "\nStudent enrolled successfully! (Available Seats: " << course->maxSeats - course->enrolledStudents << ")" << endl;
 }
 
+//Drop a Course for a Student
 void dropCourse(EnrolledList& list, CourseManagement& courseManagement, WaitlistQueue& waitlist, UndoStack& undoStack, const char* studentID, const char* courseID) {
     EnrollmentNode* temp = list.head;
     EnrollmentNode* prev = nullptr;
@@ -213,12 +204,24 @@ void dropCourse(EnrolledList& list, CourseManagement& courseManagement, Waitlist
             Course* course = courseManagement.findCourse(courseID);
             if (course != nullptr) {
                 course->enrolledStudents--;
+
+                // Manually remove the dropped student from the enrolledStudentsList
+                //So that printing of assigned course on instructor menu could get accurate student list
+                auto& enrolledList = course->enrolledStudentsList;
+                for (auto it = enrolledList.begin(); it != enrolledList.end(); ) {
+                    if (it->first == studentID) {
+                        it = enrolledList.erase(it); // Remove the student
+                    } else {
+                        ++it; // Move to the next element
+                    }
+                }
+
                 cout << "\nStudent dropped from the course successfully! (Available Seats: " << course->maxSeats - course->enrolledStudents << ")" << endl;
 
                 // Enroll the next student from the waitlist for the same course
                 if (!waitlist.isEmpty()) {
                     EnrollmentNode* waitlistStudent = waitlist.getFrontNode();
-                    if (waitlistStudent != nullptr && isValidStudentID(waitlistStudent->studentID) && strcmp(waitlistStudent->courseID, courseID) == 0) {
+                    if (waitlistStudent != nullptr && strcmp(waitlistStudent->courseID, courseID) == 0) {
                         cout << "Enrolling next student from the waitlist: " << waitlistStudent->studentID << endl;
 
                         // Enroll the student
@@ -243,19 +246,34 @@ void dropCourse(EnrolledList& list, CourseManagement& courseManagement, Waitlist
     }
 }
 
-void searchCourse(CourseManagement& courseManagement, const char* searchTerm) {
-    Course* course = courseManagement.findCourse(searchTerm);
-    if (course != nullptr) {
-        cout << "\nSearch Results:" << endl;
-        cout << "-----------------------------" << endl;
-        cout << "Course ID: " << course->id << ", Course Name: " << course->name
-             << ", Available Seats: " << course->maxSeats - course->enrolledStudents << endl;
-        cout << "-----------------------------" << endl;
-    } else {
-        cout << "\nNo matching courses found." << endl;
+//Search for a Course
+void searchCourse(CourseManagement& courseManagement, const string& searchTerm) {
+    bool found = false;
+    cout << "\nSearch Results:" << endl;
+    cout << "-----------------------------" << endl;
+
+    // Loop through all courses in the CourseManagement object
+    for (int i = 0; i < courseManagement.getCourseCount(); ++i) {
+        const Course* course = courseManagement.getCourse(i); // Get the course at index i
+        if (course != nullptr) {
+            // Check if the search term matches the course ID or course name
+            if (course->id.find(searchTerm) != string::npos ||
+                course->name.find(searchTerm) != string::npos) {
+                cout << "Course ID: " << course->id << ", Course Name: " << course->name
+                     << ", Available Seats: " << course->maxSeats - course->enrolledStudents << endl;
+                found = true;
+            }
+        }
     }
+
+    if (!found) {
+        cout << "No matching courses found." << endl;
+    }
+    cout << "-----------------------------" << endl;
 }
 
+//Cleanup EnrolledList
+//Frees the memory allocated for the enrolled list
 void cleanupEnrolledList(EnrolledList& list) {
     EnrollmentNode* temp = list.head;
     while (temp != nullptr) {
@@ -265,3 +283,5 @@ void cleanupEnrolledList(EnrolledList& list) {
     }
     list.head = nullptr;
 }
+
+
