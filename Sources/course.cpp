@@ -8,10 +8,14 @@ Stack::Stack(int cap) : capacity(cap), top(-1) {
     stackArray = new InstructorCourseAssignment[capacity]; // Initialize the array
 }
 
+//Destructor
 Stack::~Stack() {
     delete[] stackArray;
 }
 
+//Resize function
+//Doubles the capacity of the stack when it becomes full.
+//Copies existing elements to a new, larger array.
 void Stack::resize() {
     int newCapacity = capacity * 2;
     InstructorCourseAssignment* newStack = new InstructorCourseAssignment[newCapacity];
@@ -23,17 +27,20 @@ void Stack::resize() {
     capacity = newCapacity;
 }
 
+//Check whether stack is empty
 bool Stack::isEmpty() {
     return top == -1;
 }
 
+//Adds a new InstructorCourseAssignment to the top of the stack.
 void Stack::push(const string& instructorID, const string& courseID) {
     if (top == capacity - 1) {
-        resize();
+        resize(); //Resizes the stack if necessary
     }
     stackArray[++top] = {instructorID, courseID}; // Store both IDs
 }
 
+//Removes and returns the top assignment from the stack.
 InstructorCourseAssignment Stack::pop() {
     if (isEmpty()) {
         cout << "Error: Stack is empty!" << endl;
@@ -42,6 +49,7 @@ InstructorCourseAssignment Stack::pop() {
     return stackArray[top--]; // Return the assignment
 }
 
+//Returns the top assignment without removing it.
 InstructorCourseAssignment Stack::peek() {
     if (isEmpty()) {
         cout << "Error: Stack is empty!" << endl;
@@ -50,6 +58,17 @@ InstructorCourseAssignment Stack::peek() {
     return stackArray[top]; // Return the assignment
 }
 
+//Returns a vector containing all assignments in the stack.
+//Use for instructor.cpp could get all the instructed course and enrolled students multiple times else it will pop and only show 1 time
+vector<InstructorCourseAssignment> Stack::peekAll() const {
+    vector<InstructorCourseAssignment> assignments;
+    for (int i = 0; i <= top; ++i) {
+        assignments.push_back(stackArray[i]); // Add each assignment to the vector
+    }
+    return assignments;
+}
+
+//Displays all assigned courses along with instructor and course details.
 void Stack::display(const InstructorList& instructorList, const CourseManagement& courseManagement) {
     if (isEmpty()) {
         cout << "No courses assigned to instructors." << endl;
@@ -91,10 +110,12 @@ CourseManagement::CourseManagement(int cap) : capacity(cap), courseCount(0) {
     courses = new Course[capacity];
 }
 
+//Destructor for CourseManagement object
 CourseManagement::~CourseManagement() {
     delete[] courses;
 }
 
+//Doubles the capacity of the courses array when it becomes full.
 void CourseManagement::resize() {
     int newCapacity = capacity * 2;
     Course* newCourses = new Course[newCapacity];
@@ -106,8 +127,15 @@ void CourseManagement::resize() {
     capacity = newCapacity;
 }
 
+//Adds a new course to the courses array.
 void CourseManagement::addCourse(const string& id, const string& name, int maxSeats) {
     for (int i = 0; i < courseCount; ++i) {
+
+           // Validate course ID (assuming it must be non-empty)
+            if (id.empty()) {
+                cout << "Error: Course ID cannot be empty.\n";
+            return;
+        }
         if (courses[i].id == id) {
             cout << "Error: Course ID '" << id << "' already exists." << endl;
             return;
@@ -122,6 +150,7 @@ void CourseManagement::addCourse(const string& id, const string& name, int maxSe
     cout << "Course '" << name << "' added successfully." << endl;
 }
 
+//Deletes a course by its ID.
 void CourseManagement::deleteCourse(const string& id) {
     int index = -1;
     for (int i = 0; i < courseCount; ++i) {
@@ -144,6 +173,7 @@ void CourseManagement::deleteCourse(const string& id) {
     cout << "Course ID '" << id << "' deleted successfully." << endl;
 }
 
+//Updates the name and/or max seats of a course.
 void CourseManagement::updateCourse(const string& id, const string& name, int maxSeats) {
     for (int i = 0; i < courseCount; ++i) {
         if (courses[i].id == id) {
@@ -160,6 +190,7 @@ void CourseManagement::updateCourse(const string& id, const string& name, int ma
     cout << "Error: Course ID '" << id << "' does not exist." << endl;
 }
 
+//Displays all courses
 void CourseManagement::viewAllCourses() {
     if (courseCount == 0) {
         cout << "No courses available." << endl;
@@ -175,7 +206,8 @@ void CourseManagement::viewAllCourses() {
     }
 }
 
-// Add the findCourse method
+//FindCourse method used for displaying the course assigned to instructor on instructor menu
+//Finds and returns a course by its ID.
 Course* CourseManagement::findCourse(const string& id) const {
     for (int i = 0; i < courseCount; ++i) {
         if (courses[i].id == id) {
@@ -185,6 +217,7 @@ Course* CourseManagement::findCourse(const string& id) const {
     return nullptr; // Return nullptr if the course is not found
 }
 
+//Returns the list of enrolled students for a specific course.
 vector<pair<string, string>> CourseManagement::getEnrolledStudents(const string& courseID) const {
     for (int i = 0; i < courseCount; ++i) {
         if (courses[i].id == courseID) {
@@ -192,4 +225,17 @@ vector<pair<string, string>> CourseManagement::getEnrolledStudents(const string&
         }
     }
     return {}; // Return an empty vector if the course is not found
+}
+
+//Get Course Count
+int CourseManagement::getCourseCount() const {
+    return courseCount;
+}
+
+//Get Course by Index
+const Course* CourseManagement::getCourse(int index) const {
+    if (index >= 0 && index < courseCount) {
+        return &courses[index];
+    }
+    return nullptr;
 }
