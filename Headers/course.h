@@ -44,6 +44,7 @@ public:
     InstructorCourseAssignment pop(); // Update to return an assignment
     InstructorCourseAssignment peek(); // Update to return an assignment
     void display(const InstructorList& instructorList, const CourseManagement& courseManagement); // Update to include instructor and course details
+    vector<InstructorCourseAssignment> peekAll() const; // Return all assignments in the stack without modifying it
 };
 // CourseManagement class for managing courses
 class CourseManagement {
