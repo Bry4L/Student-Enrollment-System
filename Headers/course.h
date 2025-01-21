@@ -18,7 +18,7 @@ struct Course {
     int maxSeats;
     int enrolledStudents;
     vector<pair<string, string>> enrolledStudentsList;
-    vector<string> prerequisites; // List of prerequisite course IDs
+  
 };
 
 struct InstructorCourseAssignment {
@@ -65,6 +65,10 @@ public:
     Course* findCourse(const string& id) const;
 
     vector<pair<string, string>> getEnrolledStudents(const string& courseID) const;
+
+    //Methods for report generation
+    int getCourseCount() const; // Get the number of courses
+    const Course* getCourse(int index) const; // Get a course by index
 };
 
 #endif
