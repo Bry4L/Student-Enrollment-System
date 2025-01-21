@@ -42,6 +42,7 @@ void InstructorList::loadInstructorsFromFile() {
     ifstream file("instructors.txt");
     if (file.is_open()) {
         string instructorId, name, contactInfo;
+
         while (file >> instructorId >> name >> contactInfo) {
             // Create a new Instructor object and node
             Instructor* instructor = new Instructor(instructorId, name, contactInfo);
@@ -94,7 +95,7 @@ void InstructorList::addInstructor(UserList& userList) {
     newNode->next = head;
     head = newNode;
 
-    // Register the instructor's ID as username and password
+    // Register the instructor's ID as username and password as a new user
     userList.registerUser(instructorId, instructorId, "instructor");
 
     // Save instructors to file after adding
@@ -179,21 +180,22 @@ void InstructorList::viewInstructors() {
     }
 }
 
+//Displays the courses assigned to a specific instructor, along with the enrolled students in each course.
 void InstructorList::viewAssignedCourses(const string& instructorId, const Stack& instructorStack, const CourseManagement& courseManagement) {
     cout << "Assigned Courses for Instructor ID: " << instructorId << endl;
     cout << "-----------------------------------" << endl;
 
     bool found = false;
 
-    // Create a temporary stack to avoid modifying the original stack
-    Stack tempStack = instructorStack;
+    // Use peekAll to get all assignmentsOfInstructed Course without modifying the stack
+    vector<InstructorCourseAssignment> assignments = instructorStack.peekAll();
 
-    while (!tempStack.isEmpty()) {
-        InstructorCourseAssignment assignment = tempStack.pop(); // Pop the top assignment
+    // Loops through the assignments
+    for (const auto& assignment : assignments) {
         if (assignment.instructorID == instructorId) {
             found = true;
             string courseID = assignment.courseID;
-            Course* course = courseManagement.findCourse(courseID);
+            Course* course = courseManagement.findCourse(courseID); //use the function find course defined in course.cpp to store into the object
 
             if (course != nullptr) {
                 cout << "Course ID: " << course->id << ", Course Name: " << course->name << endl;
